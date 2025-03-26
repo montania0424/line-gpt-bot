@@ -44,21 +44,21 @@ def generate_keywords(user_input):
 
 def generate_product_recommendations(keyword):
     prompt = f"""
-    「{keyword}」でAmazonを検索したとして、人気の商品を3つ選んで簡単な説明を付けて会話形式で答えてください。
-各商品について:
+    「{keyword}」でAmazonを検索したとして人気の商品を3件選び、次の順で情報を紹介してください:
 - 商品名
 - おすすめポイント
 - 価格相場
-- セール情報
 
-日本語で、LINEで読みやすい文章にしてください。
+それぞれの商品に対してAmazonのアフィリエイトリンク (https://www.amazon.co.jp/s?k=...) を「tag={AMAZON_TAG}」付きで作成して表示してください。
+
+日本語の読みやすい文章で簡潔に回答してください。
     """
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "user", "content": prompt}
         ],
-        max_tokens=500
+        max_tokens=700
     )
     return response.choices[0].message.content.strip()
 
@@ -78,7 +78,7 @@ def handle_message(event):
     keyword = generate_keywords(user_input)
     product_summary = generate_product_recommendations(keyword)
 
-    reply_text = f"「{keyword}」の検索結果で人気の商品を紹介するよ！\n\n{product_summary}"
+    reply_text = f"「{keyword}」の検索結果から人気商品を3件紹介するよ！\n\n{product_summary}"
 
     line_bot_api.reply_message(
         event.reply_token,
