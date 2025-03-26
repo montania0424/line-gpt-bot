@@ -42,6 +42,26 @@ def generate_keywords(user_input):
     )
     return response.choices[0].message.content.strip()
 
+def generate_product_recommendations(keyword):
+    prompt = f"""
+    「{keyword}」でAmazonを検索したとして、人気の商品を3つ選んで簡単な説明を付けて会話形式で答えてください。
+各商品について:
+- 商品名
+- おすすめポイント
+- 価格相場
+- セール情報
+
+日本語で、LINEで読みやすい文章にしてください。
+    """
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=500
+    )
+    return response.choices[0].message.content.strip()
+
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
@@ -56,9 +76,9 @@ def callback():
 def handle_message(event):
     user_input = event.message.text
     keyword = generate_keywords(user_input)
-    encoded_keyword = urllib.parse.quote(keyword)
-    amazon_url = f"https://www.amazon.co.jp/s?k={encoded_keyword}&tag={AMAZON_TAG}"
-    reply_text = f"こちらはいかがですか？\n\n\uff08{keyword}）で検索したAmazonリンクです\n{amazon_url}"
+    product_summary = generate_product_recommendations(keyword)
+
+    reply_text = f"「{keyword}」の検索結果で人気の商品を紹介するよ！\n\n{product_summary}"
 
     line_bot_api.reply_message(
         event.reply_token,
