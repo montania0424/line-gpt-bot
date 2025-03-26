@@ -1,0 +1,6 @@
+# ========================
+# requirements.txt
+# ========================
+flask
+line-bot-sdk
+openai
