@@ -11,7 +11,8 @@ from flask import Flask, request
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
-import openai, os, urllib.parse
+from openai import OpenAI
+import os, urllib.parse
 
 app = Flask(__name__)
 
@@ -22,7 +23,7 @@ AMAZON_TAG = "montania0424-22"
 
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
-openai.api_key = OPENAI_API_KEY
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 def generate_keywords(user_input):
     prompt = f"""
@@ -32,9 +33,11 @@ def generate_keywords(user_input):
     ユーザー: {user_input}
     検索キーワード:
     """
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
         max_tokens=50
     )
     return response.choices[0].message.content.strip()
